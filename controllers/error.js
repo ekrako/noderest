@@ -1,7 +1,7 @@
-exports.error500 = (error, req, res, _next) => {
-  return res.status(500).json({
-    message: 'General Error',
-    error
+exports.errorHandler = (error, req, res, _next) => {
+  const statusCode = error.statusCode || 500
+  return res.status(statusCode).json({
+    message: error.message || 'General Error',
   });
 };
 

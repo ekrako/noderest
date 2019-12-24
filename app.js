@@ -2,15 +2,35 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const secrets = require('./config/secret');
+const path = require('path');
 
 // const cors = require('cors');
 
 const feedRoutes = require('./routes/feed');
 const errorRoutes = require('./controllers/error');
+const multer = require('multer');
+
 
 const app = express();
 
 app.use(bodyParser.json());
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images')
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.filename + '-' + Date.now() + '-' + file.originalname)
+  }
+})
+const fileFilter = (req, file, cb) => {
+  cb(null, file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg')
+}
+
+app.use(multer({ storage, fileFilter }).single('image'));
+
+
 // app.use(cors());
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,7 +41,7 @@ app.use((req, res, next) => {
 });
 app.use('/feed', feedRoutes);
 app.use(errorRoutes.error404);
-app.use(errorRoutes.error500);
+app.use(errorRoutes.errorHandler);
 mongoose
   .connect(secrets.mongoConnectionString, {
     useNewUrlParser: true,
