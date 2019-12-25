@@ -2,12 +2,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const secrets = require('./config/secret');
+const isAuth = require('./middleware/is-auth');
+
 const path = require('path');
 
 const cors = require('cors');
 
 const feedRoutes = require('./routes/feed');
+const authRoutes = require('./routes/auth');
 const errorRoutes = require('./controllers/error');
+
 const multer = require('multer');
 const uuidv4 = require('uuid/v4');
 
@@ -43,9 +47,11 @@ app.use(cors());
 
 //   next();
 // });
-app.use('/feed', feedRoutes);
+app.use('/feed', isAuth, feedRoutes);
+app.use('/auth', authRoutes);
 app.use(errorRoutes.error404);
 app.use(errorRoutes.errorHandler);
+
 mongoose
   .connect(secrets.mongoConnectionString, {
     useNewUrlParser: true,
