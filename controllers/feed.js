@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const Post = require('../models/post');
+const User = require('../models/user');
 const fileHelper = require('../util/file');
 const ITEMS_PER_PAGE = 2;
 
@@ -43,8 +44,6 @@ exports.getPost = (req, res, next) => {
 };
 
 exports.createPost = (req, res, next) => {
-  const title = req.body.title;
-  const content = req.body.content;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validateion failed, incorrect Data was enetered');
@@ -57,19 +56,30 @@ exports.createPost = (req, res, next) => {
     error.statusCode = 422;
     throw error;
   }
+  const title = req.body.title;
+  const content = req.body.content;
   const imageUrl = image.path.replace(/\\/g, '/');
+  const creator = req.userId;
   const post = new Post({
     title,
     content,
     imageUrl,
-    creator: { name: 'Eran' }
+    creator
   });
   post
     .save()
-    .then(result => {
+    .then(_result => {
+      return User.findById(creator);
+    })
+    .then(user => {
+      user.posts.push(post);
+      return user.save();
+    })
+    .then(user => {
       return res.status(201).json({
         message: 'Post created successfully',
-        post: result
+        post,
+        creator: { _id: user._id, name: user.name }
       });
     })
     .catch(err => {
@@ -90,6 +100,11 @@ exports.editPost = (req, res, next) => {
       if (!post) {
         const error = new Error('No post was found');
         error.statusCode = 404;
+        throw error;
+      }
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error('Unauthorized to edit other users posts');
+        error.statusCode = 403;
         throw error;
       }
       const title = req.body.title;
@@ -125,9 +140,20 @@ exports.deletePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
-
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error('Unauthorized to delete other users posts');
+        error.statusCode = 403;
+        throw error;
+      }
       fileHelper.deleteFile(post.imageUrl);
       return Post.findByIdAndRemove(postId);
+    })
+    .then(() => {
+      return User.findById(req.userId);
+    })
+    .then(user => {
+      user.posts = user.posts.pull(postId);
+      return user.save();
     })
     .then(() => {
       return res.status(200).json({ message: 'post deletes' });
