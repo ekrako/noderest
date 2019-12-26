@@ -10,6 +10,7 @@ const cors = require('cors');
 
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
+const statusRoutes = require('./routes/status');
 const errorRoutes = require('./controllers/error');
 
 const multer = require('multer');
@@ -49,6 +50,7 @@ app.use(cors());
 // });
 app.use('/feed', isAuth, feedRoutes);
 app.use('/auth', authRoutes);
+app.use(isAuth, statusRoutes);
 app.use(errorRoutes.error404);
 app.use(errorRoutes.errorHandler);
 
