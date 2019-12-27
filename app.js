@@ -33,8 +33,8 @@ const fileFilter = (req, file, cb) => {
   cb(
     null,
     file.mimetype === 'image/png' ||
-      file.mimetype === 'image/jpg' ||
-      file.mimetype === 'image/jpeg'
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg'
   );
 };
 
@@ -60,9 +60,14 @@ mongoose
     useUnifiedTopology: true
   })
   .then(_result => {
-    app.listen('8080', () => {
+    const server = app.listen('8080', () => {
       console.log('server listen http://localhost:8080');
     });
+    const io = require('./socket').init(server);
+    io.on('connect', socket => {
+      console.log('Web socket Connected');
+
+    })
   })
   .catch(err => {
     console.log(err);
