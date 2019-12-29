@@ -18,8 +18,8 @@ exports.getStatus = async (req, res, next) => {
 };
 
 exports.setStatus = async (req, res, next) => {
+  const errors = validationResult(req);
   try {
-    const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const error = new Error('Status cannot be empty');
       error.statusCode = 422;
