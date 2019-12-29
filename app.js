@@ -2,19 +2,23 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const secrets = require('./config/secret');
-const isAuth = require('./middleware/is-auth');
+// const isAuth = require('./middleware/is-auth');
 
 const path = require('path');
 
 const cors = require('cors');
 
-const feedRoutes = require('./routes/feed');
-const authRoutes = require('./routes/auth');
-const statusRoutes = require('./routes/status');
+// const feedRoutes = require('./routes/feed');
+// const authRoutes = require('./routes/auth');
+// const statusRoutes = require('./routes/status');
 const errorRoutes = require('./controllers/error');
 
 const multer = require('multer');
 const uuidv4 = require('uuid/v4');
+const graphqlHttp = require('express-graphql');
+const graphqlSchema = require('./graphql/schema');
+const graphqlResolver = require('./graphql/resolvers');
+
 
 const app = express();
 
@@ -41,6 +45,12 @@ const fileFilter = (req, file, cb) => {
 app.use(multer({ storage, fileFilter }).single('image'));
 
 app.use(cors());
+app.use('/graphql', graphqlHttp({
+  schema: graphqlSchema,
+  rootValue: graphqlResolver
+
+
+}))
 // app.use((req, res, next) => {
 //   res.setHeader('Access-Control-Allow-Origin', '*');
 //   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE');
@@ -48,9 +58,9 @@ app.use(cors());
 
 //   next();
 // });
-app.use('/feed', isAuth, feedRoutes);
-app.use('/auth', authRoutes);
-app.use(isAuth, statusRoutes);
+// app.use('/feed', isAuth, feedRoutes);
+// app.use('/auth', authRoutes);
+// app.use(isAuth, statusRoutes);
 app.use(errorRoutes.error404);
 app.use(errorRoutes.errorHandler);
 
@@ -60,14 +70,11 @@ mongoose
     useUnifiedTopology: true
   })
   .then(_result => {
-    const server = app.listen('8080', () => {
+    app.listen('8080', () => {
       console.log('server listen http://localhost:8080');
     });
-    const io = require('./socket').init(server);
-    io.on('connect', socket => {
-      console.log('Web socket Connected');
 
-    })
+
   })
   .catch(err => {
     console.log(err);
