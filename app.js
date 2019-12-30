@@ -47,7 +47,8 @@ app.use(multer({ storage, fileFilter }).single('image'));
 app.use(cors());
 app.use('/graphql', graphqlHttp({
   schema: graphqlSchema,
-  rootValue: graphqlResolver
+  rootValue: graphqlResolver,
+  graphiql: true
 
 
 }))
