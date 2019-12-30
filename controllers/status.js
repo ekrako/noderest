@@ -5,7 +5,7 @@ const { validationResult } = require('express-validator');
 exports.getStatus = async (req, res, next) => {
   const userId = req.userId;
   try {
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
       const error = new Error('User was not found');
       error.statusCode = 422;
@@ -27,7 +27,7 @@ exports.setStatus = async (req, res, next) => {
     }
     const userId = req.userId;
     const status = req.body.status;
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
       const error = new Error('User was not found');
       error.statusCode = 422;

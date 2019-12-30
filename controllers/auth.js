@@ -8,7 +8,9 @@ exports.signup = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      const error = new Error('Validateion failed, incorrect Data was enetered');
+      const error = new Error(
+        'Validateion failed, incorrect Data was enetered'
+      );
       error.statusCode = 422;
       error.data = errors.array();
       throw error;
@@ -22,7 +24,7 @@ exports.signup = async (req, res, next) => {
       const error = new Error('User already exist  found');
       error.statusCode = 422;
       error.data = errors.array();
-      throw error
+      throw error;
     }
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -49,7 +51,9 @@ exports.login = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      const error = new Error('Validateion failed, incorrect Data was enetered');
+      const error = new Error(
+        'Validateion failed, incorrect Data was enetered'
+      );
       error.statusCode = 422;
       error.data = errors.array();
       throw error;
@@ -57,21 +61,19 @@ exports.login = async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
 
-
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email });
 
     if (!user) {
       const error = new Error('Wrong email and password combination');
       error.statusCode = 401;
-      throw error
-
+      throw error;
     }
     const isAuth = await bcrypt.compare(password, user.password);
 
     if (!isAuth) {
       const error = new Error('Wrong email and password combination');
       error.statusCode = 401;
-      throw error
+      throw error;
     }
     const token = jwt.sign(
       {
@@ -93,5 +95,4 @@ exports.login = async (req, res, next) => {
     error.httpStatusCode = 500;
     next(error);
   }
-
 };
