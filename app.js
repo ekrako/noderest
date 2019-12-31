@@ -19,7 +19,6 @@ const graphqlHttp = require('express-graphql');
 const graphqlSchema = require('./graphql/schema');
 const graphqlResolver = require('./graphql/resolvers');
 
-
 const app = express();
 
 app.use(bodyParser.json());
@@ -37,21 +36,31 @@ const fileFilter = (req, file, cb) => {
   cb(
     null,
     file.mimetype === 'image/png' ||
-    file.mimetype === 'image/jpg' ||
-    file.mimetype === 'image/jpeg'
+      file.mimetype === 'image/jpg' ||
+      file.mimetype === 'image/jpeg'
   );
 };
 
 app.use(multer({ storage, fileFilter }).single('image'));
 
 app.use(cors());
-app.use('/graphql', graphqlHttp({
-  schema: graphqlSchema,
-  rootValue: graphqlResolver,
-  graphiql: true
-
-
-}))
+app.use(
+  '/graphql',
+  graphqlHttp({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+    graphiql: true,
+    customFormatErrorFn(err) {
+      if (!err.originalError) {
+        return err;
+      }
+      const data = err.originalError.data;
+      const message = err.message || 'Error occured';
+      const statusCode = err.originalError.statusCode || 500;
+      return { message, status: statusCode, data };
+    }
+  })
+);
 // app.use((req, res, next) => {
 //   res.setHeader('Access-Control-Allow-Origin', '*');
 //   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE');
@@ -74,8 +83,6 @@ mongoose
     app.listen('8080', () => {
       console.log('server listen http://localhost:8080');
     });
-
-
   })
   .catch(err => {
     console.log(err);
