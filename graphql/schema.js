@@ -25,12 +25,18 @@ module.exports = buildSchema(`
     password: String!
   }
 
+  type AuthData {
+    token:String!
+    userId:String!
+  }
+  
   type RootMotation {
     createUser(userInput: UserInputData):User!
+    createPost(title:String!,content:String!,userId:String!,token:String):Post!
   }
 
   type RootQuery {
-    hello: String
+    login(email: String!, password: String! ):AuthData!
   }
 
   
@@ -39,4 +45,4 @@ module.exports = buildSchema(`
     query:RootQuery
     mutation:RootMotation
   }
-`)
+`);
